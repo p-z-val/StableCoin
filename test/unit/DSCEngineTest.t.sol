@@ -7,6 +7,7 @@ import {DecentralizedStableCoin} from "../../src/DecentralizedStableCoin.sol";
 import {DeployDSC} from "../../script/DeployDSC.s.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/ERC20Mock.sol";
+import {MockV3Aggregator} from "../mocks/MockV3Aggregator.sol";
 
 contract DSCEngineTest is Test {
     DeployDSC deployDSC;
@@ -20,6 +21,8 @@ contract DSCEngineTest is Test {
     address public USER = makeAddr("USER");
     uint256 public constant AMOUNT_COLLATERAL = 10 ether;
     uint256 public constant STARTING_ERC_20_BALANCE = 10 ether;
+    uint256 amountCollateral = 10 ether;
+    uint256 amountToMint = 100 ether;
 
     function setUp() public {
         deployDSC = new DeployDSC();
@@ -70,9 +73,9 @@ contract DSCEngineTest is Test {
         dscEngine.depositCollateral(address(ranToken), AMOUNT_COLLATERAL);
         vm.stopPrank();
     }
-    ///////////////////////////////////////
-    ///////Deposit Collateral Test ///////
-    //////////////////////////////////////
+    ///////////////////////////////////////////////////
+    ///////Deposit Collateral & Mint DSC Tests ///////
+    /////////////////////////////////////////////////
 
     modifier depositedCollateral() {
         vm.startPrank(USER);
@@ -99,5 +102,18 @@ contract DSCEngineTest is Test {
         uint256 expectedDespositAmount = dscEngine.getTokenAmountFromUSD(weth, collateralValueInUSD);
         assertEq(totalDSCMinted, expectedTotalDSCMinted);
         assertEq(expectedDespositAmount, AMOUNT_COLLATERAL);
+    }
+
+    function testRevertsIfMintedDscBreaksHealthFactor() public {
+        (, int256 price,,,) = MockV3Aggregator(ethUsdPriceFeed).latestRoundData();
+        amountToMint = (amountCollateral * (uint256(price) * dscEngine.getAdditionalFeedPrecision())) / dscEngine.getPrecision();
+        vm.startPrank(USER);
+        ERC20Mock(weth).approve(address(dscEngine), amountCollateral);
+
+        uint256 expectedHealthFactor =
+            dscEngine.calculateHealthFactor(amountToMint, dscEngine.getUSDValue(weth, amountCollateral));
+        vm.expectRevert(abi.encodeWithSelector(DSCEngine.DSCEngine__BreaksHealthFactor.selector, expectedHealthFactor));
+        dscEngine.depositCollateralAndMintDSC(weth, amountCollateral, amountToMint);
+        vm.stopPrank();
     }
 }
