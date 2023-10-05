@@ -10,6 +10,7 @@ import {DSCEngine} from "../../src/DSCEngine.sol";
 import {DecentralizedStableCoin} from "../../src/DecentralizedStableCoin.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {Handler} from "./Handler.t.sol";
 
 contract InvariantsTest is StdInvariant,Test{
     DeployDSC deployer;
@@ -18,16 +19,19 @@ contract InvariantsTest is StdInvariant,Test{
     HelperConfig helperConfig;
     address weth;
     address wbtc;
+    Handler handler;
 
 
     function setUp() external{
         deployer=new DeployDSC();
         (dsc, dsce, helperConfig)=deployer.run();
         (,,weth,wbtc,)=helperConfig.activeNetworkConfig();
-        targetContract(address(dsce));
+        // targetContract(address(dsce));
         //We need to call the functions in sensical order
         // for eg. Don't call redeem collateral unless you have deposited collateral
         //So we are going to make a handler which is going to make calls the way we want
+        handler =new Handler(dsce,dsc);
+        targetContract(handler);
     }
 
     function invariant_protocolMusthaveMoreValueThanTotalSupply() public view{
