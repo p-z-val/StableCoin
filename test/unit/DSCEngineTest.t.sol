@@ -106,7 +106,8 @@ contract DSCEngineTest is Test {
 
     function testRevertsIfMintedDscBreaksHealthFactor() public {
         (, int256 price,,,) = MockV3Aggregator(ethUsdPriceFeed).latestRoundData();
-        amountToMint = (amountCollateral * (uint256(price) * dscEngine.getAdditionalFeedPrecision())) / dscEngine.getPrecision();
+        amountToMint =
+            (amountCollateral * (uint256(price) * dscEngine.getAdditionalFeedPrecision())) / dscEngine.getPrecision();
         vm.startPrank(USER);
         ERC20Mock(weth).approve(address(dscEngine), amountCollateral);
 

@@ -24,13 +24,11 @@
 //     address weth;
 //     address wbtc;
 
-
 //     function setUp() external{
 //         deployer=new DeployDSC();
 //         (dsc, dsce, helperConfig)=deployer.run();
 //         (,,weth,wbtc,)=helperConfig.activeNetworkConfig();
 //         targetContract(address(dsce));
-
 
 //     }
 

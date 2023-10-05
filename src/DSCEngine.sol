@@ -230,9 +230,14 @@ contract DSCEngine is ReentrancyGuard {
         _revertIfHealthFactorBelowThreshold(msg.sender);
     }
 
-    function calculateHealthFactor(uint256 totalDSCMinted,uint256 collateralValueInUSD) external pure returns (uint256) {
-        return _calculateHealthFactor(totalDSCMinted,collateralValueInUSD);
+    function calculateHealthFactor(uint256 totalDSCMinted, uint256 collateralValueInUSD)
+        external
+        pure
+        returns (uint256)
+    {
+        return _calculateHealthFactor(totalDSCMinted, collateralValueInUSD);
     }
+
     function getHealthFator() external {}
     ////////////////////////////////////////////////
     ///////Private & Internal View Functions////////
@@ -289,12 +294,16 @@ contract DSCEngine is ReentrancyGuard {
         }
     }
 
-    function _calculateHealthFactor(uint256 totalDSCMinted,uint256 collateralValueInUSD)internal pure returns(uint256){
-        if(totalDSCMinted == 0 ){
+    function _calculateHealthFactor(uint256 totalDSCMinted, uint256 collateralValueInUSD)
+        internal
+        pure
+        returns (uint256)
+    {
+        if (totalDSCMinted == 0) {
             return type(uint256).max;
         }
-        uint256 collateralAdjustedForThreshold=(collateralValueInUSD*LIQUIDATION_THRESHOLD)/LIQUIDATION_PRECISION;
-        return (collateralAdjustedForThreshold*1e18)/totalDSCMinted;
+        uint256 collateralAdjustedForThreshold = (collateralValueInUSD * LIQUIDATION_THRESHOLD) / LIQUIDATION_PRECISION;
+        return (collateralAdjustedForThreshold * 1e18) / totalDSCMinted;
     }
 
     ///////////////////////////////////////////////
@@ -338,6 +347,7 @@ contract DSCEngine is ReentrancyGuard {
     {
         (totalDSCMinted, collateralValueInUSD) = _getAccountInformation(user);
     }
+
     function getPrecision() external pure returns (uint256) {
         return PRECISION;
     }
@@ -376,5 +386,9 @@ contract DSCEngine is ReentrancyGuard {
 
     function getHealthFactor(address user) external view returns (uint256) {
         return _healthFactor(user);
+    }
+
+    function getCollateralBalanceOfUser(address user, address token) external view returns (uint256) {
+        return s_collateralDeposited[user][token];
     }
 }
